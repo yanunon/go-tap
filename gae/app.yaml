@@ -1,5 +1,5 @@
-application: yanunon-api
-version: 3
+application: YOUR_APP_ID
+version: 1
 runtime: go
 api_version: go1
 

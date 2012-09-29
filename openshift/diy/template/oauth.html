@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Go-Tap</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css" media="all" />
+<meta name="robots" content="noindex,nofollow">
+</head>
+<body>
+	<h1><a href="/">Go-Tap</a></h1>
+	<h2>Twitter API Proxy</h2>
+	<div>
+		<h3>使用说明</h3>
+			<p>为您的Twitter账户在Go-Tap设置一个密码（非Twitter网站密码），在客户端使用BasicAuth认证方式（Twitter ID和Go-Tap密码）连接Go-Tap，Go-Tap会重新对客户端HTTP请求进行OAuth签名，实现代理功能。</p>
+	
+		<h3>你的 API Proxy 地址</h3>
+		
+		<p>
+            <input readonly="readonly" type="text" value="{{.}}/o/" onmouseover="this.focus()" onfocus="this.select()" autocomplete="off" />
+		</p>
+
+		
+		<p>
+			友情提醒：请不要随意泄漏你的 API 地址。
+		</p>
+		
+		<p class="clearfix">
+			<a class="button" href="/">返回首页</a>
+		</p>
+		
+	</div>		
+	<div id="footer">
+		2012 &copy; <a href="https://github.com/yanunon/go-tap">Go-Tap</a>
+	</div>
+</body>
+</html>
