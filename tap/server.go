@@ -92,6 +92,7 @@ func (s *Server) ListenAndServe(addr string) {
 	http.HandleFunc("/i/", func(w http.ResponseWriter, r *http.Request) { s.ImageProxyHandler(w, r) })
 	http.HandleFunc("/auth/", func(w http.ResponseWriter, r *http.Request) { s.AuthHandler(w, r) })
 	http.HandleFunc("/o/", func(w http.ResponseWriter, r *http.Request) { s.OverrideHandler(w, r) })
+	http.HandleFunc("/opm/", func(w http.ResponseWriter, r *http.Request) { s.OPMHandler(w, r) })
 	switch s.ServerType {
 	case 0:
 	case 1:
@@ -392,6 +393,27 @@ func (s *Server) parseImageUrl(body, file_type string, r *http.Request) (body_pa
 	} else {
 		replace_str := fmt.Sprintf("\"%s:\\/\\/%s\\/i$2\"", s.Scheme, s.Host)
 		body_parsed = parse_profile_img_json_re.ReplaceAllString(body, replace_str)
+	}
+	return
+}
+
+func (s *Server) OPMHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		fmt.Fprintln(w, r.URL)
+	} else {
+		httpClient := s.getHttpClient(r)
+		reqUrl := "http://server4.operamini.com"
+		req, _ := http.NewRequest(r.Method, reqUrl, r.Body)
+		req.Header.Set("content-type", "application/xml")
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
+
+		copyHeader(w.Header(), resp.Header)
+		w.WriteHeader(resp.StatusCode)
+		io.Copy(w, resp.Body)
 	}
 	return
 }
