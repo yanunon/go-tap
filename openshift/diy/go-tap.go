@@ -1,9 +1,9 @@
 package main
 
-import(
+import (
+	"fmt"
 	"github.com/yanunon/go-tap/tap"
 	"os"
-	"fmt"
 )
 
 func main() {

@@ -1,34 +1,34 @@
 package tap
 
-import(
+import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"github.com/garyburd/go-oauth/oauth"
+	"html/template"
+	"io"
+	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
-	"html/template"
-	"strings"
-	"io"
-	"fmt"
-	"math/rand"
-	"io/ioutil"
-	"encoding/base64"
-	"github.com/garyburd/go-oauth/oauth"
 	"regexp"
-	"errors"
-	"compress/gzip"
 	"strconv"
-	"bytes"
+	"strings"
 )
 
 var (
-	NoAuthError = errors.New("No Authorization Data")
-	NotBasicAuthError = errors.New("Not Basic Authorization")
+	NoAuthError         = errors.New("No Authorization Data")
+	NotBasicAuthError   = errors.New("Not Basic Authorization")
 	NotMatchPasswdError = errors.New("Not Match Password")
-	NotExistUserError = errors.New("Not Exist User")
+	NotExistUserError   = errors.New("Not Exist User")
 
 	expand_tco_xml_re         = regexp.MustCompile("<url>([\\w\\.:/]+?)</url>\\s+?<display_url>[\\w\\.:/]+?</display_url>\\s+?<expanded_url>([\\w\\.:/]+?)</expanded_url>")
 	expand_tco_json_re        = regexp.MustCompile("\"url\":\"([^\"]+?)\",[^{}]*?\"expanded_url\":\"([^\"]+?)\"")
 	parse_profile_img_json_re = regexp.MustCompile("\"(https?:\\\\/\\\\/[\\w]+?\\.twimg\\.com)([^\"]+?)\"")
 	parse_profile_img_xml_re  = regexp.MustCompile(">(https?://[\\w]+?\\.twimg\\.com)([^<]+?)<")
-	
+
 	valid_str_re          = regexp.MustCompile("[^a-zA-Z0-9]")
 	oauth_token_re        = regexp.MustCompile("oauth_token=([0-9a-zA-Z]+)")
 	authenticity_token_re = regexp.MustCompile("authenticity_token = '([0-9a-zA-Z]+)'")
@@ -41,34 +41,34 @@ const unreservedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012
 //Google Appengine = 0
 //RedHat Openshift = 1
 type Server struct {
-	Host string
-	Scheme string
-	DataDir string
-	ServerType int
-	Templates *template.Template
-	UserData map[string]UserData
+	Host        string
+	Scheme      string
+	DataDir     string
+	ServerType  int
+	Templates   *template.Template
+	UserData    map[string]UserData
 	OAuthClient *oauth.Client
 }
 
 type UserData struct {
-	ScreenName string
+	ScreenName       string
 	OAuthTokenSecret string
-	OAuthToken string
-	Password string
-	UserId string
+	OAuthToken       string
+	Password         string
+	UserId           string
 }
 
-func NewServer(key, secret, host, scheme, dataDir string, serverType int) (*Server) {
+func NewServer(key, secret, host, scheme, dataDir string, serverType int) *Server {
 	server := &Server{
-		Host: host,
-		Scheme: scheme,
-		DataDir: dataDir,
+		Host:       host,
+		Scheme:     scheme,
+		DataDir:    dataDir,
 		ServerType: serverType,
 	}
 	//template
 	server.Templates = template.Must(template.ParseFiles(
-		server.DataDir + "template/index.html",
-		server.DataDir + "template/oauth.html",
+		server.DataDir+"template/index.html",
+		server.DataDir+"template/oauth.html",
 	))
 
 	//oauth
@@ -88,14 +88,14 @@ func NewServer(key, secret, host, scheme, dataDir string, serverType int) (*Serv
 }
 
 func (s *Server) ListenAndServe(addr string) {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {s.IndexHandler(w, r)})
-	http.HandleFunc("/i/", func(w http.ResponseWriter, r *http.Request) {s.ImageProxyHandler(w, r)})
-	http.HandleFunc("/auth/", func(w http.ResponseWriter, r *http.Request) {s.AuthHandler(w, r)})
-	http.HandleFunc("/o/", func(w http.ResponseWriter, r *http.Request) {s.OverrideHandler(w, r)})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { s.IndexHandler(w, r) })
+	http.HandleFunc("/i/", func(w http.ResponseWriter, r *http.Request) { s.ImageProxyHandler(w, r) })
+	http.HandleFunc("/auth/", func(w http.ResponseWriter, r *http.Request) { s.AuthHandler(w, r) })
+	http.HandleFunc("/o/", func(w http.ResponseWriter, r *http.Request) { s.OverrideHandler(w, r) })
 	switch s.ServerType {
 	case 0:
 	case 1:
-		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.DataDir + "static"))))
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(s.DataDir+"static"))))
 		http.ListenAndServe(addr, nil)
 	}
 }
@@ -113,7 +113,6 @@ func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	s.Templates.ExecuteTemplate(w, "index.html", indexParams)
 }
 
-
 func (s *Server) ImageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	httpClient := s.getHttpClient(r)
 
@@ -122,7 +121,7 @@ func (s *Server) ImageProxyHandler(w http.ResponseWriter, r *http.Request) {
 	twimg_url := ""
 	if url_parts[2] == "media" {
 		twimg_url = fmt.Sprintf("http://pbs.twimg.com/%s", img_url)
-	}else {
+	} else {
 		twimg_url = fmt.Sprintf("http://a%d.twimg.com/%s", rand.Int()%4, img_url)
 	}
 
@@ -141,7 +140,6 @@ func (s *Server) ImageProxyHandler(w http.ResponseWriter, r *http.Request) {
 		io.Copy(w, resp.Body)
 	}
 }
-
 
 func (s *Server) getBasicAuth(r *http.Request) (u UserData, err error) {
 	auth_str := r.Header.Get("Authorization")
@@ -180,7 +178,6 @@ type OAuthTemplateParam struct {
 	GetType1 bool
 	BaseUrl  string
 }
-
 
 func (s *Server) AuthHandler(w http.ResponseWriter, r *http.Request) {
 	httpClient := s.getHttpClient(r)
@@ -233,7 +230,7 @@ func (s *Server) AuthHandler(w http.ResponseWriter, r *http.Request) {
 					OAuthToken:       cred.Token,
 					OAuthTokenSecret: cred.Secret,
 					UserId:           vars["user_id"][0],
-					Password:        gt_passwd,
+					Password:         gt_passwd,
 				}
 				//c.Infof("%+v\n", vars)
 				err := s.setUserData(userData, r)
@@ -349,7 +346,7 @@ func (s *Server) OverrideHandler(w http.ResponseWriter, r *http.Request) {
 		defer resp.Body.Close()
 		body, _ = ioutil.ReadAll(gzipR)
 		defer gzipR.Close()
-	}else {
+	} else {
 		body, _ = ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 	}
@@ -364,7 +361,7 @@ func (s *Server) OverrideHandler(w http.ResponseWriter, r *http.Request) {
 		nBody := []byte(body_str)
 		gzipW.Write(nBody)
 		gzipW.Close()
-	}else {
+	} else {
 		buffer.WriteString(body_str)
 	}
 	w.Header().Set("Content-Length", strconv.Itoa(buffer.Len()))
@@ -419,4 +416,3 @@ func urlEncode(val string) (ret string) {
 	}
 	return
 }
-

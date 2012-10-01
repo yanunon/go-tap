@@ -14,7 +14,6 @@ var (
 	Session = sessions.NewDatastoreStore("", []byte("go-tap-very-secret"))
 )
 
-
 func (s *Server) getUserData(screen_name string, r *http.Request) (u UserData, err error) {
 	u, ok := s.UserData[screen_name]
 	if !ok {
@@ -50,7 +49,7 @@ func (s *Server) setUserData(u UserData, r *http.Request) (err error) {
 	return
 }
 
-func (s *Server) getHttpClient(r *http.Request) (client *http.Client){
+func (s *Server) getHttpClient(r *http.Request) (client *http.Client) {
 	switch s.ServerType {
 	case 0:
 		c := appengine.NewContext(r)

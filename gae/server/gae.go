@@ -1,6 +1,6 @@
 package main
 
-import(
+import (
 	"github.com/yanunon/go-tap/tap"
 )
 
