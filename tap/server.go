@@ -402,9 +402,9 @@ func (s *Server) OPMHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, r.URL)
 	} else {
 		httpClient := s.getHttpClient(r)
-		reqUrl := "http://server4.operamini.com"
+		reqUrl := "http://mini5.opera-mini.net"
 		req, _ := http.NewRequest(r.Method, reqUrl, r.Body)
-		req.Header.Set("content-type", "application/xml")
+		copyHeader(req.Header, r.Header)
 		resp, err := httpClient.Do(req)
 		if err != nil {
 			w.WriteHeader(500)
