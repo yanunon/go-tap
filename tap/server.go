@@ -307,7 +307,7 @@ func (s *Server) OverrideHandler(w http.ResponseWriter, r *http.Request) {
 	forwardHeader := r.Header
 	//forwardHeader.Del("Accept-Encoding")
 	forwardUrl := strings.Join(url_parts[2:], "/")
-	forwardUrl = "https://api.twitter.com/1/" + forwardUrl
+	forwardUrl = "https://api.twitter.com/" + forwardUrl
 	params := make(url.Values)
 	//fmt.Println(forwardUrl)
 	r.ParseForm()
