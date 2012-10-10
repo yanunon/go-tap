@@ -425,8 +425,8 @@ func (s *Server) ClearDataHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintln(w, err)
 		fmt.Fprintln(w, name)
-	}else {
-		fmt.Fprintln(w, "delete:" + name)
+	} else {
+		fmt.Fprintln(w, "delete:"+name)
 	}
 	return
 }

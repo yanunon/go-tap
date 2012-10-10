@@ -72,4 +72,3 @@ func (s *Server) ClearData(name string, r *http.Request) (err error) {
 	}
 	return
 }
-
