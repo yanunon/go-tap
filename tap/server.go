@@ -78,7 +78,7 @@ func NewServer(key, secret, host, scheme, dataDir string, serverType int) *Serve
 	}
 	server.OAuthClient = &oauth.Client{
 		TemporaryCredentialRequestURI: "https://api.twitter.com/oauth/request_token",
-		ResourceOwnerAuthorizationURI: "https://api.twitter.com/oauth/authenticate",
+		ResourceOwnerAuthorizationURI: "https://api.twitter.com/oauth/authorize",
 		TokenRequestURI:               "https://api.twitter.com/oauth/access_token",
 		Credentials:                   credentials,
 	}
@@ -93,6 +93,7 @@ func (s *Server) ListenAndServe(addr string) {
 	http.HandleFunc("/auth/", func(w http.ResponseWriter, r *http.Request) { s.AuthHandler(w, r) })
 	http.HandleFunc("/o/", func(w http.ResponseWriter, r *http.Request) { s.OverrideHandler(w, r) })
 	http.HandleFunc("/opm/", func(w http.ResponseWriter, r *http.Request) { s.OPMHandler(w, r) })
+	http.HandleFunc("/clear/", func(w http.ResponseWriter, r *http.Request) { s.ClearDataHandler(w, r) })
 	switch s.ServerType {
 	case 0:
 	case 1:
@@ -414,6 +415,18 @@ func (s *Server) OPMHandler(w http.ResponseWriter, r *http.Request) {
 		copyHeader(w.Header(), resp.Header)
 		w.WriteHeader(resp.StatusCode)
 		io.Copy(w, resp.Body)
+	}
+	return
+}
+
+func (s *Server) ClearDataHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Path[7:]
+	err := s.ClearData(name, r)
+	if err != nil {
+		fmt.Fprintln(w, err)
+		fmt.Fprintln(w, name)
+	}else {
+		fmt.Fprintln(w, "delete:" + name)
 	}
 	return
 }

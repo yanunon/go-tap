@@ -58,3 +58,18 @@ func (s *Server) getHttpClient(r *http.Request) (client *http.Client) {
 	}
 	return
 }
+
+func (s *Server) ClearData(name string, r *http.Request) (err error) {
+	switch s.ServerType {
+	case 0:
+		c := appengine.NewContext(r)
+		keys, err1 := datastore.NewQuery(name).KeysOnly().GetAll(c, nil)
+		if err1 != nil {
+			return err1
+		}
+		err = datastore.DeleteMulti(c, keys)
+	case 1:
+	}
+	return
+}
+

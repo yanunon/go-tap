@@ -42,6 +42,15 @@ func (s *Server) setUserData(u UserData, r *http.Request) (err error) {
 	return
 }
 
+//do nothing
+func (s *Server) ClearData(name string, r *http.Request) (err error) {
+	switch s.ServerType {
+	case 0:
+	case 1:
+	}
+	return
+}
+
 func (s *Server) getHttpClient(r *http.Request) (client *http.Client) {
 	switch s.ServerType {
 	case 0:
