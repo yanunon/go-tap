@@ -9,6 +9,6 @@
 >修改文件[gae/server/gae.go](https://github.com/yanunon/go-tap/blob/master/gae/server/gae.go)，将`KEY`和`SECRET`改为你的Twitter应用程序的相应值，`HOST`改为对应的`app_id.appspot.com`，`DATA_DIR`设为""即可。
 
 2. OpenShift
->修改文件[openshift/diy/go-tap.go](https://github.com/yanunon/go-tap/blob/master/openshift/diy/go-tap.go)，将`KEY`和`SECRET`改为你的Twitter应用程序的相应值，`HOST`改为相应的`your_id.rhcloud.com`，your_id改为你在OpenShift上相应的名称即可。
+>修改文件[openshift/diy/go-tap.go](https://github.com/yanunon/go-tap/blob/master/openshift/diy/go-tap.go)，将`KEY`和`SECRET`改为你的Twitter应用程序的相应值，`HOST`改为相应的`your_id.rhcloud.com`，your_id为你的应用在OpenShift上相应的名称。
 >
 >本地编译后通过git上传。具体参考项目[golang-openshift](https://github.com/gcmurphy/golang-openshift)。
