@@ -3,6 +3,7 @@ package tap
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -167,8 +168,8 @@ func (s *Server) getBasicAuth(r *http.Request) (u UserData, err error) {
 	if err != nil {
 		return
 	}
-
-	if passwd != u.Password {
+	encryptedPasswd := encryptPassword(s.Host+user, passwd)
+	if encryptedPasswd != u.Password {
 		fmt.Printf("passwd:%s uPassword:%s\n", passwd, u.Password)
 		err = NotMatchPasswdError
 		return
@@ -218,7 +219,8 @@ func (s *Server) AuthHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == "GET" {
-		if r.FormValue("oauth_token") != "" && r.FormValue("oauth_verifier") != "" {
+		_, secretok := session.Values["oauth_token_secret"]
+		if r.FormValue("oauth_token") != "" && r.FormValue("oauth_verifier") != "" && secretok {
 			tempCred := oauth.Credentials{
 				//Token: session.Values["oauth_token"].(string),
 				Token: r.FormValue("oauth_token"),
@@ -227,12 +229,13 @@ func (s *Server) AuthHandler(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				gt_passwd := session.Values["gt_passwd"].(string)
 				screen_name := vars["screen_name"][0]
+				encryptedPasswd := encryptPassword(s.Host+screen_name, gt_passwd)
 				userData := UserData{
 					ScreenName:       screen_name,
 					OAuthToken:       cred.Token,
 					OAuthTokenSecret: cred.Secret,
 					UserId:           vars["user_id"][0],
-					Password:         gt_passwd,
+					Password:         encryptedPasswd,
 				}
 				//c.Infof("%+v\n", vars)
 				err := s.setUserData(userData, r)
@@ -248,6 +251,8 @@ func (s *Server) AuthHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			return
+		} else {
+			fmt.Fprintln(w, "lost session")
 		}
 	}
 }
@@ -449,5 +454,12 @@ func urlEncode(val string) (ret string) {
 			ret += fmt.Sprintf("%%%s%s", string("0123456789ADCDEF"[c>>4]), string("0123456789ABCDEF"[c&15]))
 		}
 	}
+	return
+}
+
+func encryptPassword(salt, password string) (encryptedPasswd string) {
+	encrypt := sha256.New()
+	io.WriteString(encrypt, salt+password)
+	encryptedPasswd = base64.StdEncoding.EncodeToString(encrypt.Sum(nil))
 	return
 }
